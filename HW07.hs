@@ -142,8 +142,8 @@ evalTrace :: Term -> Traced Int
 evalTrace (Num n) = undefined
 
 evalTrace (Div t u) =
-  let Traced leftText  a = undefined   -- TODO: evalTrace t
-      Traced rightText b = undefined   -- TODO: evalTrace u
+  let Traced leftText  a = undefined
+      Traced rightText b = undefined
       result = a `div` b
   in undefined                       -- TODO: combined trace and value
 
