@@ -21,5 +21,5 @@ spec =
         `shouldBe` [runCounted (evalCountM t) c | t <- genericTerms, c <- [0, 1, 7]]
     it "evalTraceW agrees with evalTraceM, trace text and order included" $
       map evalTraceW genericTerms `shouldBe` map evalTraceM genericTerms
-    it "evalWith notes every node: tOk gives 5 trace lines" $
+    it "evalWith calls afterNode on every node: tOk gives 5 trace lines" $
       traceSummary (evalTraceW tOk) `shouldBe` (43, 5)

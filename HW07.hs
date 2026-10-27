@@ -327,17 +327,19 @@ evalTraceM (Div t u) = undefined
 -- PART 9. One evaluator for all four
 -- ============================================================================
 
--- TODO 9a: Write the evaluator once, for any monad m. It takes two hooks:
---   note t n     runs after node t has been evaluated to n (for EVERY node)
---   divide a b   divides two already-evaluated values
--- A Num node: note it, then return its value. A Div node: evaluate left,
--- evaluate right, divide, note the result, then return it.
+-- TODO 9a: Write the evaluator once, for any monad m. It takes two functions:
+--   afterNode   called after EVERY node (numbers too) is evaluated, with that
+--               node and the value it evaluated to: afterNode (Num n) n for a
+--               number, afterNode (Div t u) v for a division.
+--   divide      gets the two evaluated children and produces the quotient.
+-- A Num node: call afterNode, then return its value. A Div node: evaluate
+-- left, evaluate right, divide, call afterNode on the result, then return it.
 evalWith :: Monad m
          => (Term -> Int -> m ())
          -> (Int -> Int -> m Int)
          -> Term -> m Int
-evalWith note divide (Num n)   = undefined
-evalWith note divide (Div t u) = undefined
+evalWith afterNode divide (Num n)   = undefined
+evalWith afterNode divide (Div t u) = undefined
 
 -- TODO 9b: Get each monadic evaluator back as one call to evalWith.
 -- Each should agree with the matching ...M evaluator.
