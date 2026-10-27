@@ -94,8 +94,12 @@ evalSafe (Div t u) =
 -- both its result (a) and a new counter.
 --
 -- Read: Counted a ~ Int -> (a, Int).
-newtype Counted a = Counted
-  { runCounted :: Int -> (a, Int) }
+newtype Counted a = Counted (Int -> (a, Int))
+
+-- PROVIDED: take the function back out of a Counted, and run it on a
+-- starting counter.
+runCounted :: Counted a -> Int -> (a, Int)
+runCounted (Counted f) = f
 
 -- Convenient way to run a counted computation starting with counter 0.
 runFromZero :: Counted a -> (a, Int)
@@ -215,8 +219,11 @@ evalSafeM (Div t u) = undefined
 
 -- PROVIDED: These instances are intentionally trivial. There is no error,
 -- counter, or log to manage. Bind simply applies the next function.
-newtype Plain a = Plain { unPlain :: a }
+newtype Plain a = Plain a
   deriving (Show, Eq)
+
+unPlain :: Plain a -> a
+unPlain (Plain x) = x
 
 instance Functor Plain where
   fmap f (Plain x) = Plain (f x)
@@ -387,8 +394,10 @@ checks =
 --
 -- One possible representation:
 --
--- newtype SafeCount a = SafeCount
---   { runSafeCount :: Int -> (SafeResult a, Int) }
+-- newtype SafeCount a = SafeCount (Int -> (SafeResult a, Int))
+--
+-- runSafeCount :: SafeCount a -> Int -> (SafeResult a, Int)
+-- runSafeCount (SafeCount f) = f
 --
 -- Can you build pure, bind, and an evaluator that reports both a
 -- division-by-zero error AND the number of successful divisions before it?
