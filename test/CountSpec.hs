@@ -3,9 +3,7 @@ module CountSpec where
 import HW07
 import Test.Hspec
 
--- Three divisions, with a division on BOTH sides. If the right child were
--- started from the original counter instead of the left child's result,
--- the final count would come out wrong.
+-- Three divisions, with a division on each side.
 threeDivs :: Term
 threeDivs = Div (Div (Num 100) (Num 5)) (Div (Num 8) (Num 2))
 

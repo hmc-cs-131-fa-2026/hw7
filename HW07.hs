@@ -130,7 +130,8 @@ traceLine :: Term -> Int -> String
 traceLine term n =
   "eval(" ++ show term ++ ") = " ++ show n ++ "\n"
 
--- TODO 4: Return a line for every Num and every Div.
+-- TODO 4: Return a line for every Num and every Div. Make each line with
+-- traceLine, so the format matches the tests.
 -- For division, combine logs in the order: left, right, current node.
 -- Division by zero still throws an ordinary exception in this version.
 evalTrace :: Term -> Traced Int
@@ -240,6 +241,10 @@ evalPlainM (Div t u) = undefined
 -- PART 7. Factor out the counter threading, then make Counted a Monad
 -- ============================================================================
 
+-- PROVIDED: a counted step that increments the counter.
+tick :: Counted ()
+tick = Counted $ \count -> ((), count + 1)
+
 -- TODO 7a: Factor the counter threading out of evalCount, the way safeBind
 -- factored the error checks out of evalSafe. Run `first` on the incoming
 -- counter, pass its value to `next`, and run the computation that `next`
@@ -263,12 +268,9 @@ instance Applicative Counted where
     in (f x, count2)
 
 -- TODO 7c: >>= should do exactly what countBind does.
+-- (Writing `first >>= next = countBind first next` is a fine answer.)
 instance Monad Counted where
   first >>= next = undefined
-
--- PROVIDED: a counted step that increments the counter.
-tick :: Counted ()
-tick = Counted $ \count -> ((), count + 1)
 
 -- TODO 7d: Use do notation and tick, NOT explicit counters.
 evalCountM :: Term -> Counted Int
@@ -315,7 +317,37 @@ evalTraceM (Div t u) = undefined
 --     ==> (43,5)
 
 -- ============================================================================
--- PART 9. Quick checks (provided)
+-- PART 9. One evaluator for all four
+-- ============================================================================
+
+-- TODO 9a: Write the evaluator once, for any monad m. It takes two hooks:
+--   note t n     runs after node t has been evaluated to n (for EVERY node)
+--   divide a b   divides two already-evaluated values
+-- A Num node: note it, then return its value. A Div node: evaluate left,
+-- evaluate right, divide, note the result, then return it.
+evalWith :: Monad m
+         => (Term -> Int -> m ())
+         -> (Int -> Int -> m Int)
+         -> Term -> m Int
+evalWith note divide (Num n)   = undefined
+evalWith note divide (Div t u) = undefined
+
+-- TODO 9b: Get each monadic evaluator back as one call to evalWith.
+-- Each should agree with the matching ...M evaluator.
+evalPlainW :: Term -> Plain Int
+evalPlainW = undefined
+
+evalSafeW :: Term -> SafeResult Int
+evalSafeW = undefined
+
+evalCountW :: Term -> Counted Int
+evalCountW = undefined
+
+evalTraceW :: Term -> Traced Int
+evalTraceW = undefined
+
+-- ============================================================================
+-- Quick checks (provided)
 -- ============================================================================
 
 -- These checks deliberately stay simple: a list of names and Boolean results.
@@ -342,7 +374,11 @@ checks =
   , ("monadic safe",  evalSafeM tBad == Exception "division by zero")
   , ("monadic count", runFromZero (evalCountM tOk) == (43, 2))
   , ("monadic trace", traceSummary (evalTraceM tOk) == (43, 5))
-  , ("right identity (success)", (Value 7 >>= pure) == Value 7)
+  , ("trace order",   evalTraceM tOk == evalTrace tOk)
+  , ("evalWith",      evalTraceW tOk == evalTraceM tOk
+                        && runFromZero (evalCountW tOk) == (43, 2)
+                        && evalSafeW tBad == Exception "division by zero")
+  , ("right identity (success)", (Value 7 >>= pure) == (Value 7 :: SafeResult Int))
   , ("right identity (failure)",
        ((Exception "oops" >>= pure) :: SafeResult Int) == Exception "oops")
   ]
