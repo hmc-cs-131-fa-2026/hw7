@@ -237,8 +237,15 @@ evalPlainM (Div t u) = undefined
 --   unPlain (evalPlainM tOk) ==> 43
 
 -- ============================================================================
--- PART 7. Genuine instances for Counted, plus a monadic evaluator
+-- PART 7. Factor out the counter threading, then make Counted a Monad
 -- ============================================================================
+
+-- TODO 7a: Factor the counter threading out of evalCount, the way safeBind
+-- factored the error checks out of evalSafe. Run `first` on the incoming
+-- counter, pass its value to `next`, and run the computation that `next`
+-- returns on the updated counter. (Lab 7's followedBy did this for a stack.)
+countBind :: Counted a -> (a -> Counted b) -> Counted b
+countBind first next = undefined
 
 -- PROVIDED: how to map over a counted computation without changing its count.
 instance Functor Counted where
@@ -247,7 +254,7 @@ instance Functor Counted where
     in (f x, count1)
 
 -- PROVIDED: <*> threads the counter through the first and second computations.
--- TODO 7a: implement only `pure` here.
+-- TODO 7b: implement only `pure` here.
 instance Applicative Counted where
   pure x = undefined
   (Counted first) <*> (Counted second) = Counted $ \count0 ->
@@ -255,19 +262,15 @@ instance Applicative Counted where
         (x, count2) = second count1
     in (f x, count2)
 
--- TODO 7b: Implement >>=, passing the updated count to the continuation.
--- HINT: `next x` is another Counted computation that must be run.
+-- TODO 7c: >>= should do exactly what countBind does.
 instance Monad Counted where
-  Counted first >>= next = Counted $ \count0 ->
-    let (x, count1) = first count0
-        Counted second = next x
-    in undefined  -- TODO: run second on count1
+  first >>= next = undefined
 
 -- PROVIDED: a counted step that increments the counter.
 tick :: Counted ()
 tick = Counted $ \count -> ((), count + 1)
 
--- TODO 7c: Use do notation and tick, NOT explicit counters.
+-- TODO 7d: Use do notation and tick, NOT explicit counters.
 evalCountM :: Term -> Counted Int
 evalCountM (Num n) = undefined
 evalCountM (Div t u) = undefined

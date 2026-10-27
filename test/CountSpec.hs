@@ -36,7 +36,19 @@ spec = do
   describe "Part 3" $
     countEvaluatorSpec "evalCount" evalCount
 
-  describe "Part 7.1: Counted instances" $ do
+  describe "Part 7.1: countBind" $ do
+    it "countBind tick (\\_ -> tick) counts twice" $
+      runCounted (countBind tick (\_ -> tick)) 0 `shouldBe` ((), 2)
+    it "countBind passes the first step's value to next" $
+      runCounted (countBind (Counted (\c -> (c + 100, c))) (\x -> Counted (\c -> (x * 2, c)))) 3
+        `shouldBe` (206 :: Int, 3)
+    it "countBind gives next the counter produced by the first step" $
+      runCounted (countBind tick (\_ -> Counted (\c -> (c * 10, c)))) 4 `shouldBe` (50 :: Int, 5)
+    it "countBind runs next's computation and keeps its counter" $
+      runCounted (countBind (Counted (\c -> (7, c))) (\x -> Counted (\c -> (x, c + 1)))) 0
+        `shouldBe` (7 :: Int, 1)
+
+  describe "Part 7.2: Counted instances" $ do
     it "pure 4 leaves the counter alone" $
       runCounted (pure 4 :: Counted Int) 3 `shouldBe` (4, 3)
     it "fmap changes the value but not the counter" $
@@ -48,7 +60,7 @@ spec = do
     it ">>= gives the second step the counter produced by the first step" $
       runCounted (tick >>= \_ -> Counted (\c -> (c * 10, c))) 4 `shouldBe` (50 :: Int, 5)
 
-  describe "Part 7.3" $ do
+  describe "Part 7.4" $ do
     countEvaluatorSpec "evalCountM" evalCountM
     it "evalCountM agrees with evalCount from several starting counters" $
       [runCounted (evalCountM t) c | t <- countTerms, c <- [0, 1, 7]]
