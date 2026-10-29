@@ -315,7 +315,7 @@ instance Monad Traced where
 record :: String -> Traced ()
 record message = Traced message ()
 
--- TODO 8c: Use do notation and record, NOT explicit log concatenation.
+-- TODO 8c: Use do notation in BOTH cases, with record. NO explicit log concatenation.
 -- Record one line for EVERY Num and Div as in evalTrace.
 evalTraceM :: Term -> Traced Int
 evalTraceM (Num n) = undefined
