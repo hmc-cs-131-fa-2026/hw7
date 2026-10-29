@@ -338,6 +338,7 @@ evalTraceM (Div t u) = undefined
 --   divide      gets the two evaluated children and produces the quotient.
 -- A Num node: call afterNode, then return its value. A Div node: evaluate
 -- left, evaluate right, divide, call afterNode on the result, then return it.
+-- The recursive calls need the same two hooks passed along.
 evalWith :: Monad m
          => (Term -> Int -> m ())
          -> (Int -> Int -> m Int)
