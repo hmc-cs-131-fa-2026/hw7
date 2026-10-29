@@ -253,9 +253,13 @@ tick :: Counted ()
 tick = Counted $ \count -> ((), count + 1)
 
 -- TODO 7a: Factor the counter threading out of evalCount, the way safeBind
--- factored the error checks out of evalSafe. Run `first` on the incoming
--- counter, pass its value to `next`, and run the computation that `next`
--- returns on the updated counter. (Lab 7's followedBy did this for a stack.)
+-- factored the error checks out of evalSafe. The result is a Counted b: a
+-- function waiting for a starting counter (call it count0). That function
+-- should
+--   1. run `first` starting at count0, giving a value x and a counter count1,
+--   2. call `next x` to get the next computation,
+--   3. run that computation starting at count1. Its answer is the answer.
+-- (Lab 7's followedBy did this for a stack.)
 countBind :: Counted a -> (a -> Counted b) -> Counted b
 countBind first next = undefined
 
